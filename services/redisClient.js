@@ -300,12 +300,12 @@ async function incrementRewardQuota(userId, module, rewardType, amount) {
   const minute = `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}-${now.getUTCHours()}-${now.getUTCMinutes()}`;
   const day = `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}`;
 
-  // Use standard keys for quota, but can be extended for module-specific if needed
+  // Use standard keys for quota, matching the pattern in getQuotaStatus()
   let key;
   if (rewardType === 'tokens') {
-    key = `tpd:${userId}:${day}`;
+    key = `user:tpd:${userId}:${day}`; // FIXED: Match getQuotaStatus() key pattern
   } else if (rewardType === 'requests') {
-    key = `rpd:${userId}:${day}`;
+    key = `user:rpd:${userId}:${day}`; // FIXED: Match getQuotaStatus() key pattern
   } else {
     return { success: false, error: 'Invalid rewardType' };
   }
@@ -324,7 +324,7 @@ async function incrementRewardQuota(userId, module, rewardType, amount) {
     rpm: await getCounter(`rpm:${userId}:${minute}`),
     rpd: await getCounter(`rpd:${userId}:${day}`),
     tpm: await getCounter(`tpm:${userId}:${minute}`),
-    tpd: await getCounter(`tpd:${userId}:${day}`),
+    tpd: await getCounter(`user:tpd:${userId}:${day}`), // FIXED: Use correct key pattern
   };
   return { success: true, usage, limits };
 }
