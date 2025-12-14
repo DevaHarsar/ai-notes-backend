@@ -310,8 +310,15 @@ async function incrementRewardQuota(userId, module, rewardType, amount) {
     return { success: false, error: 'Invalid rewardType' };
   }
 
-  // Increment the quota
-  await redis.incrby(key, amount);
+  // ✅ FIX: DECREMENT used counter (not increment)
+  // Reward tokens reduce the "used" amount, making more tokens available
+  // Example: if used=1488 and reward=500, after decrement used=988 (more available)
+  const newValue = await redis.decrby(key, amount);
+  
+  // Ensure value doesn't go negative (user can't have negative used tokens)
+  if (newValue < 0) {
+    await redis.set(key, 0);
+  }
 
   // Return updated usage and limits
   const limits = {
